@@ -4,18 +4,27 @@ A Python project for coding exercises and development.
 
 ## Setup for Development
 
-This is the standard setup for working on this project. It will install the application and all the necessary development tools (pytest, black, etc.).
+This project has dependencies with specific hardware requirements (e.g., PyTorch). To ensure a smooth setup on any machine, follow this two-step process.
 
-1. **Create the virtual environment:**
-   ```bash
-   uv venv
-   ```
+1.  **Create the virtual environment:**
+    ```bash
+    uv venv
+    ```
 
-2. **Install the project in editable mode with development dependencies:**
-   ```bash
-   uv pip install -e ".[dev]"
-   ```
-   This command installs the project, all development tools (like pytest and black), and creates the demo-app command-line script.
+2.  **Install PyTorch Separately:**
+    This command lets PyTorch's installer find the correct version for your specific hardware (Intel Mac, Apple Silicon, Windows, Linux, etc.).
+    ```bash
+    uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+    ```
+    *Note: We are explicitly using the CPU-only version of PyTorch, which is perfect for this project and avoids complex CUDA dependencies.*
+
+3.  **Install the Project:**
+    Now that the difficult dependency is handled, install our application and its other development tools.
+    ```bash
+    uv pip install -e ".[dev]"
+    ```
+
+This command will now see that a compatible version of `torch` is already installed and will proceed without errors.
 
 
 ## Running the Application

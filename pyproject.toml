@@ -3,17 +3,31 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "demo_application"
+name = "fot_intervention_recommender"
 version = "0.1.0"
-description = "Demo application for technical interview"
+description = "Freshman On-Track Intervention Recommender PoC"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "setuptools>=80.9.0",
+    
+    # Pinned to v2.2.2 because the PyTorch team dropped support for macOS on Intel (x86_64)
+    # in subsequent releases. This is the last official version with a pre-built wheel
+    # that is compatible with older Mac hardware.
+    # See GitHub issue: https://github.com/pytorch/pytorch/issues/114602
+    "torch==2.2.2",
+        
+    "langchain",
+    "sentence-transformers",
+    "faiss-cpu",
+    "pandas",
+    "pymupdf",
+    "pdfplumber",
+    "transformers",
 ]
 
 [project.scripts]
-demo-app = "demo_application.main:main"
+fot-recommender = "fot_recommender.main:main"
 
 [project.optional-dependencies]
 dev = [
