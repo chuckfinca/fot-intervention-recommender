@@ -1,5 +1,5 @@
 # FOT Intervention Recommender
-## Detailed Implementation Plan
+## Detailed Implementation Plan (Revision 2)
 
 ---
 
@@ -7,130 +7,75 @@
 
 This implementation plan transforms the strategic project plan into executable phases, with specific tasks, deliverables, and success criteria for building the working proof-of-concept.
 
-**Total Estimated Time**: 8-12 hours (spread over 3-5 days)  
-**Primary Deliverable**: Google Colab Notebook with working RAG system
+***Note on Strategic Pivot:*** *We have shifted from programmatic PDF extraction to using a manually curated, high-quality JSON knowledge base (`knowledge_base_raw.json`). This decision was made to bypass the complexities and unreliability of PDF parsing and to focus directly on the core RAG pipeline development.*
+
+**Primary Deliverable**: A working RAG system application that provides intervention recommendations.
 
 ---
 
 ## Phase 0: Environment Setup & Resource Gathering
-**Duration**: 1-2 hours  
-**Goal**: Establish development environment and collect all source materials
+**Goal**: Establish a lean development environment and use the pre-processed source materials.
 
 ### Tasks
 
 #### 0.1 Development Environment Setup
-- [ ] Create new Google Colab notebook: "FOT_Intervention_Recommender"
-- [ ] Install required libraries in first cell:
-```python
-!pip install sentence-transformers faiss-cpu langchain pandas pymupdf pdfplumber transformers
-```
-- [ ] Import necessary libraries and test basic functionality
-- [ ] Set up file organization structure in Colab
+- [✅] Create local project structure.
+- [✅] ~~Install required libraries in first cell:~~
+  ```python
+  ~~!pip install sentence-transformers faiss-cpu langchain pandas pymupdf pdfplumber transformers~~
+  ```
+- [✅] **Install simplified libraries:**
+  ```bash
+  uv pip install langchain sentence-transformers faiss-cpu transformers torch
+  ```
+- [✅] Import necessary libraries and test basic functionality.
 
 #### 0.2 Source Material Collection
-- [ ] **Extract FOT Toolkit pages 43-68**:
-  - Use PDF splitter tool to extract specific pages
-  - Save as separate PDF: "FOT_Toolkit_ToolSetC.pdf"
-  - Upload to Colab files section
-
-- [ ] **Download 5 external sources**:
-  - [ ] Check & Connect materials (search UMN website)
-  - [ ] Download UChicago GPA research PDF
-  - [ ] Save REL chronic absenteeism resources
-  - [ ] Get Success for All intervention guides
-  - [ ] Download NCSSLE discipline disparities guide
+- [✅] ~~**Extract FOT Toolkit pages 43-68**~~
+- [✅] ~~**Download 5 external sources**~~
+- [✅] **Prepare `knowledge_base_raw.json`**: Manually (or with LLM assistance) extract and structure all relevant interventions from the FOT Toolkit into a clean JSON file. This file becomes our single source of truth.
 
 #### 0.3 Quick Content Reconnaissance
-- [ ] Scan each document to identify:
-  - Simple text pages (for PyMuPDF)
-  - Complex table pages (for pdfplumber)  
-  - Multi-column/flowchart pages (for manual extraction initially)
-- [ ] Create a "document complexity map" for processing strategy
+- [✅] ~~Scan each document to identify complexity~~
+- [✅] ~~Create a "document complexity map" for processing strategy~~
 
 ### Success Criteria
-- ✅ Colab environment running with all dependencies
-- ✅ All 6 source documents collected and uploaded
-- ✅ Basic understanding of each document's structure and complexity
+- ✅ Local development environment running with all simplified dependencies.
+- ✅ `knowledge_base_raw.json` file is created, validated, and located in `data/processed/`.
+- ✅ ~~Basic understanding of each document's structure and complexity~~
 
 ---
 
 ## Phase 1: Knowledge Base Construction
-**Duration**: 3-4 hours  
-**Goal**: Extract, process, and structure content into RAG-ready knowledge base
+**Goal**: ~~Extract, process, and structure content~~ **Load and semantically chunk the pre-processed knowledge base.**
 
 ### Tasks
 
 #### 1.1 Content Extraction (Hybrid Approach)
-- [ ] **Implement PyMuPDF extraction**:
-```python
-import fitz  # PyMuPDF
-def extract_simple_text(pdf_path, page_range):
-    # Extract text from simple pages
-    pass
-```
-
-- [ ] **Implement pdfplumber for tables**:
-```python
-import pdfplumber
-def extract_table_data(pdf_path, page_numbers):
-    # Extract structured table data
-    pass
-```
-
-- [ ] **Manual extraction for complex pages**:
-  - Identify 3-5 most critical complex pages
-  - Manually transcribe key intervention details
-  - Focus on flowcharts and multi-column layouts
+- [✅] ~~**Implement PyMuPDF extraction**~~
+- [✅] ~~**Implement pdfplumber for tables**~~
+- [✅] ~~**Manual extraction for complex pages**~~
+- [✅] **Load Pre-processed Knowledge Base**: Implement logic in `main.py` to load the `knowledge_base_raw.json` file.
 
 #### 1.2 Content Processing & Standardization
-- [ ] **Create intervention extraction function**:
-```python
-def extract_interventions(raw_text, source_doc):
-    """Extract structured intervention data"""
-    interventions = []
-    # Parse for intervention name, description, steps, target indicators
-    return interventions
-```
-
-- [ ] **Process each document**:
-  - FOT Toolkit Tool Set C → Core intervention framework
-  - Check & Connect → Mentoring strategies
-  - UChicago Research → Rationale and evidence base
-  - REL Resources → Attendance strategies
-  - Success for All → Comprehensive approaches
-  - NCSSLE Guide → Behavioral interventions
+- [ ] ~~**Create intervention extraction function**~~
+- [ ] ~~**Process each document**~~
+- [ ] **Implement Semantic Chunker**: Create a `semantic_chunker.py` module that combines related page-based items from the raw JSON into larger, topic-based chunks (e.g., group all pages about "Intervention Evaluation Flowchart" into one chunk).
 
 #### 1.3 Knowledge Base Structuring
-- [ ] **Create standardized intervention format**:
-```python
-intervention_schema = {
-    "id": str,
-    "name": str,
-    "description": str,
-    "implementation_steps": List[str],
-    "target_indicators": List[str],  # credits, attendance, behavior
-    "evidence_level": str,
-    "source_document": str,
-    "educator_guidance": str
-}
-```
-
-- [ ] **Implement semantic chunking**:
-  - Chunk by intervention type (300-500 words)
-  - Add 50-word overlap between chunks
-  - Create metadata tags for each chunk
+- [ ] ~~**Create standardized intervention format**~~
+- [ ] ~~**Implement semantic chunking**~~
+- [ ] **Define Final Chunk Structure**: Ensure the output of the semantic chunker is a clean list of dictionaries, each containing `title`, `fot_pages`, and a combined `content` string.
 
 ### Success Criteria
-- ✅ All documents successfully processed using appropriate extraction method
-- ✅ 20+ distinct interventions identified and structured
-- ✅ Standardized data format with consistent metadata
-- ✅ Quality validation: random sample review shows accurate extraction
+- ✅ `knowledge_base_raw.json` successfully loaded into the application.
+- ✅ Semantic chunking logic correctly combines related pages into fewer, more coherent chunks.
+- ✅ A final `knowledge_base_final_chunks.json` file is produced and validated for quality.
 
 ---
 
 ## Phase 2: RAG Pipeline Implementation
-**Duration**: 2-3 hours  
-**Goal**: Build and test the core RAG functionality
+**Goal**: Build and test the core RAG functionality.
 
 ### Tasks
 
@@ -153,7 +98,7 @@ def create_embeddings(intervention_chunks):
 import faiss
 def create_vector_db(embeddings):
     dimension = embeddings.shape[1]
-    index = faiss.IndexFlatIP(dimension)  # Inner product for similarity
+    index = faiss.IndexFlatIP(dimension)
     index.add(embeddings)
     return index
 ```
@@ -198,7 +143,6 @@ def format_recommendations(retrieved_interventions, student_profile):
 ---
 
 ## Phase 3: System Integration & Testing
-**Duration**: 1-2 hours  
 **Goal**: End-to-end testing with provided student profile
 
 ### Tasks
@@ -248,7 +192,6 @@ recommendations = get_fot_recommendations(sample_student)
 ---
 
 ## Phase 4: Documentation & Presentation Preparation
-**Duration**: 1-2 hours  
 **Goal**: Create clear notebook documentation and prepare for video presentation
 
 ### Tasks
@@ -287,7 +230,6 @@ recommendations = get_fot_recommendations(sample_student)
 ---
 
 ## Phase 5: Bonus Features (Optional)
-**Duration**: 2-4 hours  
 **Goal**: Implement advanced features to differentiate the solution
 
 ### Option A: API Microservice (Bonus 1)
@@ -324,42 +266,14 @@ def generate_persona_recommendations(interventions, persona):
 ## Risk Mitigation Strategies
 
 ### Technical Risks
-- **Complex PDF extraction fails**: Fall back to manual extraction for critical pages
-- **Poor embedding quality**: Test alternative models (e.g., `all-mpnet-base-v2`)
-- **Retrieval returns irrelevant results**: Adjust chunking strategy or add filtering
+- **~~Complex PDF extraction fails~~**: **(RESOLVED)** This risk has been completely eliminated by pivoting to a manually curated JSON file.
+- **Poor embedding quality**: Test alternative models (e.g., `all-mpnet-base-v2`).
+- **Retrieval returns irrelevant results**: Adjust chunking strategy or add filtering.
+- **New Risk - Poor Manual Extraction**: The quality of the RAG system now depends entirely on the quality of the `knowledge_base_raw.json`. Mitigation: Manually review and edit the JSON for clarity, accuracy, and completeness.
 
-### Time Management Risks  
-- **Document processing takes too long**: Prioritize FOT Toolkit + 2 highest-quality external sources
-- **Perfectionism trap**: Focus on working MVP first, refinements second
-- **Scope creep**: Stick to core deliverables, save enhancements for bonus phase
-
-### Quality Risks
-- **Recommendations not educator-friendly**: Test format with simple language review
-- **Source citations missing**: Implement citation tracking from extraction phase
-- **System doesn't handle edge cases**: Build in error handling and fallback responses
+### Time Management Risks
+- **~~Document processing takes too long~~**: **(RESOLVED)** This risk is eliminated.
+- **Perfectionism trap**: Focus on working MVP first, refinements second.
+- **Scope creep**: Stick to core deliverables, save enhancements for bonus phase.
 
 ---
-
-## Daily Execution Schedule
-
-### Day 1 (2-3 hours)
-- Complete Phase 0: Setup & Resource Gathering
-- Begin Phase 1: Start content extraction
-
-### Day 2 (3-4 hours)  
-- Complete Phase 1: Finish knowledge base construction
-- Begin Phase 2: Start RAG implementation
-
-### Day 3 (2-3 hours)
-- Complete Phase 2: Finish RAG pipeline
-- Complete Phase 3: Testing and validation
-
-### Day 4 (1-2 hours)
-- Complete Phase 4: Documentation and prep
-- Optional: Begin bonus features
-
-### Day 5 (Optional, 2-4 hours)
-- Phase 5: Bonus implementation
-- Final testing and video recording
-
-This implementation plan provides a clear roadmap from strategic vision to working prototype, balancing ambition with practical execution constraints.
