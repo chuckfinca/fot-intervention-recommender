@@ -1,24 +1,35 @@
+import json
 import pprint
-from fot_recommender.knowledge_base import build_knowledge_base
+from .config import RAW_KB_PATH
 
 def main():
     """
     Main entry point for the FOT Intervention Recommender application.
+    This version loads a pre-processed knowledge base directly from a JSON file.
     """
     print("--- FOT Intervention Recommender ---")
     
-    knowledge_base = build_knowledge_base()
+    # --- PHASE 1: LOAD PRE-PROCESSED KNOWLEDGE BASE ---
+    print(f"Loading knowledge base from: {RAW_KB_PATH}")
+    try:
+        with open(RAW_KB_PATH, 'r', encoding='utf-8') as f:
+            knowledge_base = json.load(f)
+    except FileNotFoundError:
+        print(f"FATAL ERROR: The knowledge base file was not found at {RAW_KB_PATH}")
+        return
+    except json.JSONDecodeError:
+        print(f"FATAL ERROR: The file at {RAW_KB_PATH} is not a valid JSON file.")
+        return
+        
+    print(f"Successfully loaded {len(knowledge_base)} items.")
     
+    print("\n--- Sample of First Knowledge Base Item ---")
     if knowledge_base:
-        print(f"\nSuccessfully built knowledge base with {len(knowledge_base)} items.")
-        print("\n--- Sample of First Extracted Intervention ---")
-        # Pretty-print the first item to verify its structure
         pprint.pprint(knowledge_base[0])
-        print("--------------------------------------------")
-    else:
-        print("\nKnowledge base construction returned 0 items. Check implementation.")
+    print("------------------------------------------")
 
-    print("\nNext steps: Implement Phase 2 (RAG Pipeline)...")
+    print("\nData loading is complete. Next step: Semantic Chunking.")
+
 
 if __name__ == "__main__":
     main()
