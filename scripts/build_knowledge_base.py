@@ -1,58 +1,58 @@
 import json
 import sys
+import faiss
+import numpy as np
 from pathlib import Path
 
-# This allows the script to find and import modules from your 'src' directory
-# by adding the project's root folder to the list of paths Python searches.
 project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
-from src.fot_recommender.config import RAW_KB_PATH, PROCESSED_DATA_DIR  # noqa: E402
-from src.fot_recommender.semantic_chunker import chunk_by_concept  # noqa: E402
+from src.fot_recommender.config import PROCESSED_DATA_DIR, RAW_KB_PATH # noqa: E402
+from src.fot_recommender.semantic_chunker import chunk_by_concept # noqa: E402
+from src.fot_recommender.rag_pipeline import (  # noqa: E402
+    initialize_embedding_model,
+    create_embeddings,
+)
 
 
 def build():
     """
-    This script performs the knowledge base build process.
-    1. Loads the raw, manually curated knowledge base.
-    2. Uses the semantic chunker to group entries by concept.
-    3. Saves the final, consolidated chunks to the file that the main
-       RAG pipeline expects ('knowledge_base_final_chunks.json').
+    Builds the entire knowledge base artifact set needed by the application:
+    1.  The processed, semantically chunked JSON file.
+    2.  The Facebook AI Similarity Search (FAISS) vector index file (`faiss_index.bin`).
     """
-    print("--- Building Final Knowledge Base ---")
+    print("--- Building Final Knowledge Base and FAISS Index ---")
 
-    # Define the path for the output file
+    # --- Create Final Chunks ---
     final_chunks_path = PROCESSED_DATA_DIR / "knowledge_base_final_chunks.json"
-
-    # 1. Load the raw knowledge base file
     print(f"Loading raw knowledge base from: {RAW_KB_PATH}")
-    try:
-        with open(RAW_KB_PATH, "r", encoding="utf-8") as f:
-            raw_kb = json.load(f)
-    except FileNotFoundError:
-        print(f"ERROR: Raw knowledge base file not found at {RAW_KB_PATH}. Halting.")
-        return
+    with open(RAW_KB_PATH, "r", encoding="utf-8") as f:
+        raw_kb = json.load(f)
 
-    print(f"Loaded {len(raw_kb)} raw entries.")
-
-    # 2. Process and chunk the knowledge base using the existing chunker
-    print("Applying semantic chunking to consolidate related content...")
     final_chunks = chunk_by_concept(raw_kb)
-    print(f"Created {len(final_chunks)} final semantic chunks.")
-
-    # 3. Save the final chunked file
-    print(f"Saving final chunked knowledge base to: {final_chunks_path}")
-
-    # Ensure the 'processed' directory exists before trying to write to it
     PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
     with open(final_chunks_path, "w", encoding="utf-8") as f:
-        # We use indent=4 to make the final JSON file human-readable,
-        # which is extremely helpful for debugging and verification.
         json.dump(final_chunks, f, indent=4)
+    print(f"✅ Saved {len(final_chunks)} semantic chunks to {final_chunks_path}")
 
-    print("\n✅ Success! The final knowledge base is built and ready.")
-    print("You can now run the main application.")
+    # --- Create and Save FAISS Index ---
+    faiss_index_path = PROCESSED_DATA_DIR / "faiss_index.bin"
+    print("\n--- Creating FAISS Index ---")
+
+    model = initialize_embedding_model()
+    embeddings = create_embeddings(final_chunks, model)
+
+    # Explicitly set dtype for FAISS
+    embeddings = np.asarray(embeddings).astype("float32")
+
+    dimension = embeddings.shape[1]
+    index = faiss.IndexFlatIP(dimension)
+    index.add(embeddings)  # type: ignore
+
+    faiss.write_index(index, str(faiss_index_path))
+    print(f"✅ Saved FAISS index with {index.ntotal} vectors to {faiss_index_path}")
+
+    print("\n🎉 Success! All artifacts are built and ready for the application.")
 
 
 if __name__ == "__main__":

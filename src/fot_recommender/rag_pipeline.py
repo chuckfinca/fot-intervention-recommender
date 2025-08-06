@@ -2,8 +2,7 @@ import faiss  # type: ignore
 import json
 import numpy as np
 import google.generativeai as genai
-import os
-from dotenv import load_dotenv
+
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Tuple
 from fot_recommender.prompts import PROMPT_TEMPLATES
@@ -108,17 +107,13 @@ def search_interventions(
 def generate_recommendation_summary(
     retrieved_chunks: List[Tuple[Dict[str, Any], float]],
     student_narrative: str,
+    api_key: str,
     persona: str = "teacher",
 ) -> str:
     """
     Generates a synthesized recommendation using the Google Gemini API,
     tailored to a specific persona.
     """
-    load_dotenv()
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        return "ERROR: GOOGLE_API_KEY not found. Please create a .env file and add your key."
-
     genai.configure(api_key=api_key)  # type: ignore
 
     if persona not in PROMPT_TEMPLATES:

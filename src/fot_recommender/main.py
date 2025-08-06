@@ -1,3 +1,7 @@
+import os
+
+from dotenv.main import load_dotenv
+
 from fot_recommender.config import PROCESSED_DATA_DIR
 from fot_recommender.rag_pipeline import (
     load_knowledge_base,
@@ -5,7 +9,7 @@ from fot_recommender.rag_pipeline import (
     create_embeddings,
     create_vector_db,
     search_interventions,
-    generate_recommendation_summary
+    generate_recommendation_summary,
 )
 
 # --- Sample Student Profile from Project Description ---
@@ -36,9 +40,9 @@ def main():
     4. Sets up a FAISS vector database.
     5. Tests the retrieval system with the sample student profile.
     """
-    print("--- FOT Intervention Recommender: Phase 2 ---")
+    print("--- FOT Intervention Recommender ---")
 
-    # --- Load the final knowledge base created in Phase 1 ---
+    # --- Load the final knowledge base ---
     final_chunks_path = PROCESSED_DATA_DIR / "knowledge_base_final_chunks.json"
     knowledge_base_chunks = load_knowledge_base(str(final_chunks_path))
 
@@ -49,18 +53,18 @@ def main():
     print(f"Successfully loaded {len(knowledge_base_chunks)} processed chunks.")
     print("-" * 50)
 
-    # --- Phase 2.1: Vector Embedding Setup ---
+    # --- Vector Embedding Setup ---
     embedding_model = initialize_embedding_model()
 
-    # --- Phase 2.2: Create Embeddings for Knowledge Base ---
+    # --- Create Embeddings for Knowledge Base ---
     embeddings = create_embeddings(knowledge_base_chunks, embedding_model)
 
-    # --- Phase 2.3: Set up FAISS Vector Database ---
+    # --- Set up FAISS Vector Database ---
     vector_db = create_vector_db(embeddings)
 
     print("-" * 50)
 
-    # --- Phase 2.4: Test Retrieval with Sample Student Profile ---
+    # --- Test Retrieval with Sample Student Profile ---
     student_query = sample_student_profile["narrative_summary_for_embedding"]
 
     # Find the top 3 most relevant interventions
@@ -78,21 +82,31 @@ def main():
         return
 
     # --- 4. Generate Synthesized Recommendation (for 'teacher' persona) ---
+    load_dotenv()
+    api_key = os.getenv("FOT_GOOGLE_API_KEY")
+    if not api_key:
+        return "ERROR: FOT_GOOGLE_API_KEY not found. Please create a .env file and add your key."
+
     synthesized_recommendation = generate_recommendation_summary(
-        top_interventions, student_query, persona="teacher"
+        top_interventions, 
+        student_query, 
+        api_key=api_key,
+        persona="teacher"
     )
 
     # --- 5. Display Final Output ---
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("      FINAL SYNTHESIZED RECOMMENDATION FOR EDUCATOR")
-    print("="*50 + "\n")
+    print("=" * 50 + "\n")
     print(synthesized_recommendation)
-    
-    print("\n" + "-"*50)
+
+    print("\n" + "-" * 50)
     print("Evidence retrieved from the following sources:")
     for chunk, score in top_interventions:
-        print(f"- {chunk['title']} (Source: {chunk['source_document']}, Relevance: {score:.2f})")
-    
+        print(
+            f"- {chunk['title']} (Source: {chunk['source_document']}, Relevance: {score:.2f})"
+        )
+
     print("\n\n✅ Full RAG process complete!")
 
 

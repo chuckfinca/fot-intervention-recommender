@@ -25,6 +25,8 @@ dependencies = [
     "transformers",
     "google-generativeai",
     "python-dotenv",
+    "gradio",
+    "gradio_client",
 ]
 
 [project.scripts]
@@ -52,7 +54,7 @@ where = ["src"]
 
 exclude = [
     ".venv",
-    "*/__pycache__/*", # Also excludes pycache within subdirectories
+    "*/__pycache__/*", 
     "src/fot_intervention_recommender.egg-info",
-    "*.ipynb", # <-- THIS IS THE KEY LINE TO EXCLUDE ALL NOTEBOOKS
+    "*.ipynb",
 ]
