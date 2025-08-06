@@ -34,6 +34,8 @@ dev = [
     "mypy>=1.16.1",
     "pytest>=8.4.1",
     "ruff>=0.12.2",
+    "jupyterlab>=4.0", 
+    "notebook>=7.0"
 ]
 
 [tool.setuptools.packages.find]
