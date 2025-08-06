@@ -23,6 +23,8 @@ dependencies = [
     "sentence-transformers",
     "faiss-cpu",
     "transformers",
+    "google-generativeai",
+    "python-dotenv",
 ]
 
 [project.scripts]
@@ -43,3 +45,14 @@ where = ["src"]
 
 [tool.setuptools.package-dir]
 "" = "src"
+
+[tool.ruff.lint]
+# Add any specific rules you want to enforce here in the future.
+# For now, we will just define what to exclude.
+
+exclude = [
+    ".venv",
+    "*/__pycache__/*", # Also excludes pycache within subdirectories
+    "src/fot_intervention_recommender.egg-info",
+    "*.ipynb", # <-- THIS IS THE KEY LINE TO EXCLUDE ALL NOTEBOOKS
+]

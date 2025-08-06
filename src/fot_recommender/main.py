@@ -1,10 +1,11 @@
-from .config import PROCESSED_DATA_DIR
-from .rag_pipeline import (
+from fot_recommender.config import PROCESSED_DATA_DIR
+from fot_recommender.rag_pipeline import (
     load_knowledge_base,
     initialize_embedding_model,
     create_embeddings,
     create_vector_db,
     search_interventions,
+    generate_recommendation_summary
 )
 
 # --- Sample Student Profile from Project Description ---
@@ -68,25 +69,31 @@ def main():
         model=embedding_model,
         index=vector_db,
         knowledge_base=knowledge_base_chunks,
+        min_similarity_score=0.4,
         k=3,
     )
 
-    print("\n--- Top 3 Recommended Intervention Chunks ---")
-    for i, (chunk, score) in enumerate(top_interventions):
-        print(f"\n--- Recommendation {i + 1} (Score: {score:.4f}) ---")
-        print(f"Title: {chunk['title']}")
-        print(f"Source: {chunk['source_document']} ({chunk['fot_pages']})")
-        # To keep the output clean, we'll show the first 300 chars of the content
-        print(f"Content Snippet: {chunk['original_content'][:300]}...")
+    if not top_interventions:
+        print("Could not find relevant interventions for the student.")
+        return
 
-    print("-" * 50)
-    print("\n✅ PHASE 2 (RAG Pipeline Implementation) is complete!")
-    print(
-        "The system can now retrieve relevant interventions based on a student narrative."
+    # --- 4. Generate Synthesized Recommendation (for 'teacher' persona) ---
+    synthesized_recommendation = generate_recommendation_summary(
+        top_interventions, student_query, persona="teacher"
     )
-    print(
-        "\nNext step: Phase 3 - System Integration & Testing (Formatting the final output for educators)."
-    )
+
+    # --- 5. Display Final Output ---
+    print("\n" + "="*50)
+    print("      FINAL SYNTHESIZED RECOMMENDATION FOR EDUCATOR")
+    print("="*50 + "\n")
+    print(synthesized_recommendation)
+    
+    print("\n" + "-"*50)
+    print("Evidence retrieved from the following sources:")
+    for chunk, score in top_interventions:
+        print(f"- {chunk['title']} (Source: {chunk['source_document']}, Relevance: {score:.2f})")
+    
+    print("\n\n✅ Full RAG process complete!")
 
 
 if __name__ == "__main__":

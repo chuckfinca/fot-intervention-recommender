@@ -1,3 +1,3 @@
-from .main import main
+from fot_recommender.main import main
 
 __all__ = ["main"]

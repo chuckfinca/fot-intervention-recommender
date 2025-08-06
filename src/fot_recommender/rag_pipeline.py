@@ -1,8 +1,12 @@
 import faiss  # type: ignore
 import json
 import numpy as np
+import google.generativeai as genai
+import os
+from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Tuple
+from fot_recommender.prompts import PROMPT_TEMPLATES
 
 
 def load_knowledge_base(path: str) -> List[Dict[str, Any]]:
@@ -72,6 +76,7 @@ def search_interventions(
     index: faiss.Index,
     knowledge_base: List[Dict[str, Any]],
     k: int = 3,
+    min_similarity_score: float = 0.4,
 ) -> List[Tuple[Dict[str, Any], float]]:
     """
     Performs a semantic search to find the most relevant interventions.
@@ -92,5 +97,53 @@ def search_interventions(
         if i != -1:  # FAISS returns -1 for no result
             results.append((knowledge_base[i], score))
 
-    print(f"Found {len(results)} relevant interventions.")
-    return results
+    filtered_results = [
+        (chunk, score) for chunk, score in results if score >= min_similarity_score
+    ]
+
+    print(f"Found {len(filtered_results)} relevant interventions.")
+    return filtered_results
+
+
+def generate_recommendation_summary(
+    retrieved_chunks: List[Tuple[Dict[str, Any], float]],
+    student_narrative: str,
+    persona: str = "teacher",
+) -> str:
+    """
+    Generates a synthesized recommendation using the Google Gemini API,
+    tailored to a specific persona.
+    """
+    load_dotenv()
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        return "ERROR: GOOGLE_API_KEY not found. Please create a .env file and add your key."
+
+    genai.configure(api_key=api_key)  # type: ignore
+
+    if persona not in PROMPT_TEMPLATES:
+        return f"ERROR: Persona '{persona}' is not a valid choice."
+
+    # 1. Prepare the context from retrieved chunks for the prompt
+    context = ""
+    for i, (chunk, _) in enumerate(retrieved_chunks):
+        context += f"--- Intervention Chunk {i + 1} ---\n"
+        context += f"Title: {chunk['title']}\n"
+        context += f"Content: {chunk['original_content']}\n"
+        context += f"(Source Document: {chunk['source_document']})\n\n"
+
+    # 2. Select and format the persona-specific prompt
+    prompt_template = PROMPT_TEMPLATES[persona]
+    prompt = prompt_template.format(
+        student_narrative=student_narrative, context=context
+    )
+
+    # 3. Call the Gemini API
+    try:
+        print(f"\nSynthesizing recommendation for persona: '{persona}' using Gemini...")
+        model = genai.GenerativeModel("gemini-1.5-flash-latest")  # type: ignore
+        response = model.generate_content(prompt)
+        print("Synthesis complete.")
+        return response.text
+    except Exception as e:
+        return f"An error occurred while calling the Gemini API: {e}"

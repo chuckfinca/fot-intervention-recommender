@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Tuple
 
+
 def display_recommendations(results: List[Tuple[Dict[str, Any], float]]):
     """
     A helper function to neatly print the results of a semantic search.
@@ -18,9 +19,9 @@ def display_recommendations(results: List[Tuple[Dict[str, Any], float]]):
         print(f"\n--- Recommendation {i + 1} (Similarity Score: {score:.4f}) ---")
         print(f"  Title: {chunk['title']}")
         print(f"  Source: {chunk['source_document']} ({chunk['fot_pages']})")
-        
+
         # Indent the content for better readability
-        content = chunk['original_content']
+        content = chunk["original_content"]
         indented_content = "\n  ".join(content.splitlines())
-        print(f"  \n  Content Snippet:\n  \"{indented_content[:500]}...\"")
+        print(f'  \n  Content Snippet:\n  "{indented_content[:500]}..."')
         print("-" * 50)

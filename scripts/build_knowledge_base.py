@@ -7,8 +7,9 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
-from src.fot_recommender.config import RAW_KB_PATH, PROCESSED_DATA_DIR
-from src.fot_recommender.semantic_chunker import chunk_by_concept
+from src.fot_recommender.config import RAW_KB_PATH, PROCESSED_DATA_DIR  # noqa: E402
+from src.fot_recommender.semantic_chunker import chunk_by_concept  # noqa: E402
+
 
 def build():
     """
@@ -31,7 +32,7 @@ def build():
     except FileNotFoundError:
         print(f"ERROR: Raw knowledge base file not found at {RAW_KB_PATH}. Halting.")
         return
-    
+
     print(f"Loaded {len(raw_kb)} raw entries.")
 
     # 2. Process and chunk the knowledge base using the existing chunker
@@ -41,10 +42,10 @@ def build():
 
     # 3. Save the final chunked file
     print(f"Saving final chunked knowledge base to: {final_chunks_path}")
-    
+
     # Ensure the 'processed' directory exists before trying to write to it
     PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    
+
     with open(final_chunks_path, "w", encoding="utf-8") as f:
         # We use indent=4 to make the final JSON file human-readable,
         # which is extremely helpful for debugging and verification.
@@ -52,6 +53,7 @@ def build():
 
     print("\n✅ Success! The final knowledge base is built and ready.")
     print("You can now run the main application.")
+
 
 if __name__ == "__main__":
     build()
