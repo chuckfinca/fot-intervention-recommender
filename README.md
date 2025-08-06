@@ -32,7 +32,7 @@ This command will now see that a compatible version of `torch` is already instal
 After setup, run the application using its console script entry point. This is the standard way to run the app and avoids any warnings.
 
 ```bash
-uv run demo-app
+uv run fot-recommender
 ```
 
 ## Development Tools

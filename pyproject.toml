@@ -17,6 +17,8 @@ dependencies = [
     # See GitHub issue: https://github.com/pytorch/pytorch/issues/114602
     "torch==2.2.2",
         
+    "numpy<2.0",  # Pin to NumPy 1.x for compatibility with torch==2.2.2
+    
     "langchain",
     "sentence-transformers",
     "faiss-cpu",
