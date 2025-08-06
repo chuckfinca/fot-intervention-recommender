@@ -5,7 +5,7 @@ from fot_recommender.rag_pipeline import (
     create_embeddings,
     create_vector_db,
     search_interventions,
-    generate_recommendation_summary
+    generate_recommendation_summary,
 )
 
 # --- Sample Student Profile from Project Description ---
@@ -83,16 +83,18 @@ def main():
     )
 
     # --- 5. Display Final Output ---
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("      FINAL SYNTHESIZED RECOMMENDATION FOR EDUCATOR")
-    print("="*50 + "\n")
+    print("=" * 50 + "\n")
     print(synthesized_recommendation)
-    
-    print("\n" + "-"*50)
+
+    print("\n" + "-" * 50)
     print("Evidence retrieved from the following sources:")
     for chunk, score in top_interventions:
-        print(f"- {chunk['title']} (Source: {chunk['source_document']}, Relevance: {score:.2f})")
-    
+        print(
+            f"- {chunk['title']} (Source: {chunk['source_document']}, Relevance: {score:.2f})"
+        )
+
     print("\n\n✅ Full RAG process complete!")
 
 

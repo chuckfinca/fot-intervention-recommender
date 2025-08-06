@@ -25,6 +25,8 @@ dependencies = [
     "transformers",
     "google-generativeai",
     "python-dotenv",
+    "gradio",
+    "gradio_client",
 ]
 
 [project.scripts]
