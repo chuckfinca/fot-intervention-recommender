@@ -1,3 +1,17 @@
+---
+title: Fot Recommender Api
+emoji: ⚡
+colorFrom: green
+colorTo: pink
+sdk: gradio
+sdk_version: 5.41.0
+app_file: app.py
+pinned: false
+license: mit
+short_description: POC - Freshman On-Track RAG Intervention Recommender
+---
+
+
 # Demo Application
 
 A Python project for coding exercises and development.
