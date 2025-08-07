@@ -13,7 +13,7 @@ ACCESS_PASSWORD = os.getenv("DEMO_PASSWORD", "innovare2025")
 
 import sys
 
-sys.path.insert(0, str(Path(file).parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from fot_recommender.rag_pipeline import (
     load_knowledge_base,
