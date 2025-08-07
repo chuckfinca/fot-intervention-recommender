@@ -2,24 +2,18 @@ import gradio as gr
 import faiss
 import os
 import numpy as np
-from pathlib import Path
-
-# --- Secure "Magic Word" Authentication ---
-# We get the secret from Hugging Face Space secrets.
-# For local testing, you can set this as an environment variable.
-ACCESS_PASSWORD = os.getenv("DEMO_PASSWORD", "innovare2025")
-
-# --- Load all models and data ONCE at startup ---
-
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from fot_recommender.rag_pipeline import (
+from fot_recommender.rag_pipeline import ( # noqa: E402
     load_knowledge_base,
     initialize_embedding_model,
     generate_recommendation_summary,
 )
+
+ACCESS_PASSWORD = os.getenv("DEMO_PASSWORD", "innovare2025")
 
 print("--- Initializing API: Loading models and data... ---")
 
@@ -90,5 +84,5 @@ interface = gr.Interface(
     outputs=gr.Markdown(label="Synthesized Recommendation", show_copy_button=True),
     title="Freshman On-Track Intervention Recommender API",
     description="A live API demonstrating the FOT Recommender. Enter the provided access key to use.",
-    theme=gr.themes.Soft(),
+    theme=gr.themes.Soft(), # type: ignore
 ).launch()
