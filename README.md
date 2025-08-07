@@ -5,6 +5,7 @@ colorFrom: green
 colorTo: pink
 sdk: gradio
 sdk_version: 5.41.0
+python_version: "3.12"
 app_file: app.py
 pinned: false
 license: mit
