@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from fot_recommender.rag_pipeline import ( # noqa: E402
+from fot_recommender.rag_pipeline import (  # noqa: E402
     load_knowledge_base,
     initialize_embedding_model,
     generate_recommendation_summary,
@@ -84,5 +84,5 @@ interface = gr.Interface(
     outputs=gr.Markdown(label="Synthesized Recommendation", show_copy_button=True),
     title="Freshman On-Track Intervention Recommender API",
     description="A live API demonstrating the FOT Recommender. Enter the provided access key to use.",
-    theme=gr.themes.Soft(), # type: ignore
+    theme=gr.themes.Soft(),  # type: ignore
 ).launch()
