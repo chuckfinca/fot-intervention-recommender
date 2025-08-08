@@ -87,7 +87,7 @@ def main():
     if not api_key:
         return "ERROR: FOT_GOOGLE_API_KEY not found. Please create a .env file and add your key."
 
-    synthesized_recommendation = generate_recommendation_summary(
+    synthesized_recommendation, _ = generate_recommendation_summary(
         top_interventions, student_query, api_key=api_key, persona="teacher"
     )
 

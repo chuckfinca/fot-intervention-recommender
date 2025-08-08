@@ -109,14 +109,21 @@ def generate_recommendation_summary(
     api_key: str,
     persona: str = "teacher",
     model_name: str = GENERATIVE_MODEL_NAME,
-) -> str:
+) -> Tuple[str, Dict[str, Any]]:  # Return text and a details dictionary
     """
     Generates a synthesized recommendation using the Google Gemini API.
+
+    Returns:
+        A tuple containing:
+        - The synthesized recommendation text (str).
+        - A dictionary with detailed prompt information for logging (Dict).
     """
     genai.configure(api_key=api_key)  # type: ignore
 
+    prompt_details = {}
     if persona not in PROMPT_TEMPLATES:
-        return f"ERROR: Persona '{persona}' is not a valid choice."
+        error_message = f"ERROR: Persona '{persona}' is not a valid choice."
+        return error_message, {"error": error_message}
 
     context = ""
     for i, (chunk, _) in enumerate(retrieved_chunks):
@@ -130,6 +137,18 @@ def generate_recommendation_summary(
         student_narrative=student_narrative, context=context
     )
 
+    # --- Assemble the prompt dictionary ---
+    prompt_details = {
+        "persona": persona,
+        "llm_model_used": model_name,
+        "prompt_template": prompt_template,
+        "prompt_variables": {
+            "student_narrative": student_narrative,
+            "context": context,
+        },
+        "final_prompt_text": prompt,
+    }
+
     try:
         print(
             f"\nSynthesizing recommendation for persona: '{persona}' using {model_name}..."
@@ -137,6 +156,7 @@ def generate_recommendation_summary(
         model = genai.GenerativeModel(model_name)  # type: ignore
         response = model.generate_content(prompt)
         print("Synthesis complete.")
-        return response.text
+        return response.text, prompt_details
     except Exception as e:
-        return f"An error occurred while calling the Gemini API: {e}"
+        error_message = f"An error occurred while calling the Gemini API: {e}"
+        return error_message, prompt_details

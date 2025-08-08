@@ -7,7 +7,10 @@ import numpy as np
 import sys
 from pathlib import Path
 
-from fot_recommender.config import (
+APP_ROOT = Path(__file__).parent
+sys.path.insert(0, str(APP_ROOT / "src"))
+
+from fot_recommender.config import ( # noqa: E402
     FAISS_INDEX_PATH,
     FINAL_KB_CHUNKS_PATH,
     CITATIONS_PATH,
@@ -16,8 +19,8 @@ from fot_recommender.config import (
     SEARCH_RESULT_COUNT_K,
     MIN_SIMILARITY_SCORE,
 )
-from fot_recommender.utils import load_citations, format_evidence_for_display
-from fot_recommender.rag_pipeline import (
+from fot_recommender.utils import load_citations, format_evidence_for_display # noqa: E402
+from fot_recommender.rag_pipeline import ( # noqa: E402
     load_knowledge_base,
     initialize_embedding_model,
     generate_recommendation_summary,
@@ -115,7 +118,7 @@ def get_recommendations_api(student_narrative, persona, password):
         return
 
     # 2. GENERATE
-    synthesized_recommendation = generate_recommendation_summary(
+    synthesized_recommendation, llm_prompt_details = generate_recommendation_summary(
         retrieved_chunks=retrieved_chunks_with_scores,
         student_narrative=student_narrative,
         api_key=FOT_GOOGLE_API_KEY,
@@ -136,8 +139,7 @@ def get_recommendations_api(student_narrative, persona, password):
         evidence_list_str += (
             f"  - **Content Snippet:**\n  > {evidence['content_snippet']}\n"
         )
-
-    final_output = synthesized_recommendation + evidence_header + evidence_list_str
+    final_ui_output = synthesized_recommendation + evidence_header + evidence_list_str
 
     # 4. Assemble Evaluation Data
     evaluation_data = {
@@ -154,8 +156,11 @@ def get_recommendations_api(student_narrative, persona, password):
             }
             for chunk, score in retrieved_chunks_with_scores
         ],
-        "llm_output": {"synthesized_recommendation": synthesized_recommendation},
-        "final_ui_output": final_output,
+        "llm_prompt_details": llm_prompt_details,
+        "outputs": {
+            "llm_synthesized_recommendation": synthesized_recommendation,
+            "final_formatted_ui_output": final_ui_output,
+        },
     }
 
     # 5. Create a temporary file for download
@@ -166,7 +171,7 @@ def get_recommendations_api(student_narrative, persona, password):
         temp_file_path = f.name
 
     yield (
-        final_output,
+        final_ui_output,
         gr.update(interactive=True),
         gr.update(visible=True),
         evaluation_data,
@@ -268,7 +273,4 @@ with gr.Blocks(theme=gr.themes.Soft(), css=CUSTOM_CSS) as interface:  # type: ig
 
 
 if __name__ == "__main__":
-    # Add project src to the sys.path for when running as a script
-    APP_ROOT = Path(__file__).parent
-    sys.path.insert(0, str(APP_ROOT / "src"))
     interface.launch()
