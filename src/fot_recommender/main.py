@@ -85,7 +85,7 @@ def main():
     load_dotenv()
     api_key = os.getenv("FOT_GOOGLE_API_KEY")
     if not api_key:
-        return "ERROR: FOT_GOOGLE_API_KEY not found. Please create a .env file and add your key."
+        return "ERROR: FOT_GOOGLE_API_KEY is not set. Create a .env file with FOT_GOOGLE_API_KEY='YOUR_KEY_HERE'. Get key: https://aistudio.google.com/apikey"
 
     synthesized_recommendation, _ = generate_recommendation_summary(
         top_interventions, student_query, api_key=api_key, persona="teacher"

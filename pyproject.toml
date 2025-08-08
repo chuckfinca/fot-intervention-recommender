@@ -19,10 +19,8 @@ dependencies = [
         
     "numpy<2.0",  # Pin to NumPy 1.x for compatibility with torch==2.2.2
     
-    "langchain",
     "sentence-transformers",
     "faiss-cpu",
-    "transformers",
     "google-generativeai",
     "python-dotenv",
     "gradio",
