@@ -7,15 +7,17 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
-from src.fot_recommender.config import (
+# We are intentionally ignoring the E402 warning here because the sys.path
+# modification must happen before we can import from our local package.
+from src.fot_recommender.config import (  # noqa: E402
     PROCESSED_DATA_DIR,
     RAW_KB_PATH,
     FINAL_KB_CHUNKS_PATH,
     FAISS_INDEX_PATH,
     EMBEDDING_MODEL_NAME,
 )
-from src.fot_recommender.semantic_chunker import chunk_by_concept
-from src.fot_recommender.rag_pipeline import (
+from src.fot_recommender.semantic_chunker import chunk_by_concept  # noqa: E402
+from src.fot_recommender.rag_pipeline import (  # noqa: E402
     initialize_embedding_model,
     create_embeddings,
 )

@@ -32,4 +32,6 @@ EMBEDDING_CONTENT_KEY = "content_for_embedding"
 # --- Secrets Management ---
 # Load secrets from the environment. The application will import these variables.
 FOT_GOOGLE_API_KEY = os.environ.get("FOT_GOOGLE_API_KEY")
-DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "default_password") # Added a default for safety
+DEMO_PASSWORD = os.environ.get(
+    "DEMO_PASSWORD", "default_password"
+)  # Added a default for safety

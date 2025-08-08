@@ -11,7 +11,7 @@ from fot_recommender.config import (
     EMBEDDING_CONTENT_KEY,
     GENERATIVE_MODEL_NAME,
     SEARCH_RESULT_COUNT_K,
-    MIN_SIMILARITY_SCORE
+    MIN_SIMILARITY_SCORE,
 )
 
 
@@ -89,7 +89,7 @@ def search_interventions(
     """
     print(f"\nSearching for top {k} interventions for query: '{query[:80]}...'")
     query_embedding = np.asarray(model.encode([query])).astype("float32")
-    scores, indices = index.search(query_embedding, k)
+    scores, indices = index.search(query_embedding, k)  # type: ignore
     results = []
     for i, score in zip(indices[0], scores[0]):
         if i != -1:  # FAISS returns -1 for no result
@@ -108,7 +108,7 @@ def generate_recommendation_summary(
     student_narrative: str,
     api_key: str,
     persona: str = "teacher",
-    model_name: str = GENERATIVE_MODEL_NAME
+    model_name: str = GENERATIVE_MODEL_NAME,
 ) -> str:
     """
     Generates a synthesized recommendation using the Google Gemini API.
@@ -131,8 +131,10 @@ def generate_recommendation_summary(
     )
 
     try:
-        print(f"\nSynthesizing recommendation for persona: '{persona}' using {model_name}...")
-        model = genai.GenerativeModel(model_name)
+        print(
+            f"\nSynthesizing recommendation for persona: '{persona}' using {model_name}..."
+        )
+        model = genai.GenerativeModel(model_name)  # type: ignore
         response = model.generate_content(prompt)
         print("Synthesis complete.")
         return response.text
