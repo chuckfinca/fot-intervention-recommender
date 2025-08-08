@@ -1,6 +1,5 @@
 import datetime
 import json
-from IPython.display import display, Markdown
 
 
 def display_recommendations(results: list, citations_map: dict):
@@ -8,6 +7,9 @@ def display_recommendations(results: list, citations_map: dict):
     Displays the retrieved recommendations in a rich, Markdown-formatted output
     directly within a Jupyter/Colab notebook by using the shared formatter.
     """
+
+    from IPython.display import display, Markdown
+
     if not results:
         display(Markdown("### No relevant interventions were found for this query."))
         return

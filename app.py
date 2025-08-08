@@ -10,7 +10,7 @@ from pathlib import Path
 APP_ROOT = Path(__file__).parent
 sys.path.insert(0, str(APP_ROOT / "src"))
 
-from fot_recommender.config import ( # noqa: E402
+from fot_recommender.config import (  # noqa: E402
     FAISS_INDEX_PATH,
     FINAL_KB_CHUNKS_PATH,
     CITATIONS_PATH,
@@ -19,8 +19,8 @@ from fot_recommender.config import ( # noqa: E402
     SEARCH_RESULT_COUNT_K,
     MIN_SIMILARITY_SCORE,
 )
-from fot_recommender.utils import load_citations, format_evidence_for_display # noqa: E402
-from fot_recommender.rag_pipeline import ( # noqa: E402
+from fot_recommender.utils import load_citations, format_evidence_for_display  # noqa: E402
+from fot_recommender.rag_pipeline import (  # noqa: E402
     load_knowledge_base,
     initialize_embedding_model,
     generate_recommendation_summary,
