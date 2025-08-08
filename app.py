@@ -1,32 +1,27 @@
 import gradio as gr
 import faiss
-import os
-import numpy as np
-import sys
 import json
 import tempfile
 import datetime
+import numpy as np
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
 
-from fot_recommender.utils import load_citations
-
-load_dotenv()
-
-# --- Define the project root and paths ---
-APP_ROOT = Path(__file__).parent
-sys.path.insert(0, str(APP_ROOT / "src"))
+from fot_recommender.config import (
+    FAISS_INDEX_PATH,
+    FINAL_KB_CHUNKS_PATH,
+    CITATIONS_PATH,
+    FOT_GOOGLE_API_KEY,
+    DEMO_PASSWORD,
+    SEARCH_RESULT_COUNT_K,
+    MIN_SIMILARITY_SCORE
+)
+from fot_recommender.utils import load_citations, format_evidence_for_display
 from fot_recommender.rag_pipeline import (
     load_knowledge_base,
     initialize_embedding_model,
     generate_recommendation_summary,
 )
-from fot_recommender.utils import format_evidence_for_display
-
-# --- Define ABSOLUTE paths to the data artifacts ---
-FAISS_INDEX_PATH = APP_ROOT / "data" / "processed" / "faiss_index.bin"
-KB_PATH = APP_ROOT / "data" / "processed" / "knowledge_base_final_chunks.json"
-CITATIONS_PATH = APP_ROOT / "data" / "processed" / "citations.json"
 
 # --- Define Example Narratives for the UI (with new 'short_title') ---
 EXAMPLE_NARRATIVES = [
@@ -46,27 +41,21 @@ EXAMPLE_NARRATIVES = [
         "narrative": "While this student's academics and credits earned are currently on track and attendance is acceptable at 92%, a significant pattern of disruptive behavior is jeopardizing their long-term success. An accumulation of five behavioral flags across multiple classes indicates a primary need for interventions in behavior management and positive conduct. Support should be focused on mentoring and strategies to foster appropriate classroom engagement before these behaviors begin to negatively impact their academic standing."
     }
 ]
-# Use the short title for the UI, but map it to the full narrative
 EXAMPLE_MAP = {ex["short_title"]: ex["narrative"] for ex in EXAMPLE_NARRATIVES}
 EXAMPLE_TITLES = list(EXAMPLE_MAP.keys())
-
-
-# --- Load Environment Variables and Secrets ---
-ACCESS_PASSWORD = os.environ.get("DEMO_PASSWORD", "")
-FOT_GOOGLE_API_KEY = os.environ.get("FOT_GOOGLE_API_KEY", "")
 
 # --- Initialize models and data ---
 print("--- Initializing API: Loading models and data... ---")
 index = faiss.read_index(str(FAISS_INDEX_PATH))
-knowledge_base_chunks = load_knowledge_base(str(KB_PATH))
+knowledge_base_chunks = load_knowledge_base(str(FINAL_KB_CHUNKS_PATH))
 citations_map = load_citations(str(CITATIONS_PATH))
 embedding_model = initialize_embedding_model()
 print("✅ API initialized successfully.")
 
 def get_recommendations_api(student_narrative, persona, password):
     """The main function that runs the RAG pipeline and prepares data for export."""
-    if password != ACCESS_PASSWORD:
-        yield "Authentication failed.", gr.update(interactive=True), gr.update(visible=False), None, gr.update(visible=False)
+    if password != DEMO_PASSWORD:
+        yield "Authentication failed. Please enter a valid Access Key.", gr.update(interactive=True), gr.update(visible=False), None, gr.update(visible=False)
         return
 
     if not student_narrative:
@@ -77,8 +66,8 @@ def get_recommendations_api(student_narrative, persona, password):
 
     # 1. RETRIEVE
     query_embedding = np.asarray(embedding_model.encode([student_narrative])).astype("float32")
-    scores, indices = index.search(query_embedding, k=3)
-    retrieved_chunks_with_scores = [(knowledge_base_chunks[i], score) for i, score in zip(indices[0], scores[0]) if score >= 0.4]
+    scores, indices = index.search(query_embedding, k=SEARCH_RESULT_COUNT_K)
+    retrieved_chunks_with_scores = [(knowledge_base_chunks[i], score) for i, score in zip(indices[0], scores[0]) if score >= MIN_SIMILARITY_SCORE]
 
     if not retrieved_chunks_with_scores:
         yield "Could not find relevant interventions.", gr.update(interactive=True), gr.update(visible=False), None, gr.update(visible=False)
@@ -130,93 +119,43 @@ def get_recommendations_api(student_narrative, persona, password):
 
 # --- UI Helper Functions ---
 def clear_all():
-    """Clears inputs, outputs, and hides the export section."""
     return "", None, "", gr.update(visible=False), None, gr.update(visible=False, value=None)
 
 def update_narrative_from_example(selection):
-    """Populates the narrative textbox when an example radio button is selected."""
     return EXAMPLE_MAP.get(selection, "")
 
-# --- Custom CSS for horizontal radio buttons ---
 CUSTOM_CSS = """
-/* Target the container of the radio buttons and make them horizontal */
-.radio-horizontal .gr-form {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.5rem; /* Adjust spacing between buttons */
-}
+.radio-horizontal .gr-form { flex-direction: row; flex-wrap: wrap; gap: 0.5rem; }
 """
 
 # --- Gradio Interface ---
 with gr.Blocks(theme=gr.themes.Soft(), css=CUSTOM_CSS) as interface:
-    gr.Markdown(
-        """
-        # Freshman On-Track Intervention Recommender
-        *A live API demonstrating the FOT Recommender.*
-        """
-    )
+    gr.Markdown("# Freshman On-Track Intervention Recommender\n*A live API demonstrating the FOT Recommender.*")
     with gr.Row(equal_height=False):
         with gr.Column(scale=1):
             with gr.Group():
-                narrative_input = gr.Textbox(
-                    lines=8,
-                    label="Student Narrative",
-                    placeholder="Describe the student's situation here, or select an example below.",
-                )
-
-                # Use the new short titles and apply the custom CSS class
-                example_radio = gr.Radio(
-                    EXAMPLE_TITLES,
-                    label="Load an Example Scenario",
-                    info="Select one to populate the narrative above. Typing a custom narrative will clear this selection.",
-                    elem_classes=["radio-horizontal"] 
-                )
-
-                persona_input = gr.Radio(
-                    ["teacher", "parent", "principal"],
-                    label="Who is this recommendation for?",
-                    value="teacher",
-                    elem_classes=["radio-horizontal"] # Apply same style here for consistency
-                )
-                password_input = gr.Textbox(
-                    label="Access Key",
-                    type="password",
-                    info="Enter the access key for the demo."
-                )
-
+                narrative_input = gr.Textbox(lines=8, label="Student Narrative", placeholder="Describe the student's situation here, or select an example below.")
+                example_radio = gr.Radio(EXAMPLE_TITLES, label="Load an Example Scenario", info="Select one to populate the narrative above. Typing a custom narrative will clear this selection.", elem_classes=["radio-horizontal"])
+                persona_input = gr.Radio(["teacher", "parent", "principal"], label="Who is this recommendation for?", value="teacher", elem_classes=["radio-horizontal"])
+                password_input = gr.Textbox(label="Access Key", type="password", info="Enter the access key for the demo.")
                 with gr.Row():
                     clear_btn = gr.Button("Clear")
                     submit_btn = gr.Button("Submit", variant="primary")
-
         with gr.Column(scale=2):
             recommendation_output = gr.Markdown(label="Synthesized Recommendation", show_copy_button=True)
             with gr.Accordion("Evaluation Data", open=False, visible=False) as eval_accordion:
                 json_viewer = gr.JSON(label="Evaluation JSON")
                 download_btn = gr.DownloadButton("Download JSON", visible=False)
-                
 
     # --- Event Handlers ---
-    example_radio.change(
-        fn=update_narrative_from_example,
-        inputs=example_radio,
-        outputs=narrative_input
-    )
-    narrative_input.input(
-        fn=lambda: None,
-        inputs=None,
-        outputs=example_radio
-    )
-    submit_btn.click(
-        fn=get_recommendations_api,
-        inputs=[narrative_input, persona_input, password_input],
-        outputs=[recommendation_output, submit_btn, eval_accordion, json_viewer, download_btn]
-    )
-    clear_btn.click(
-        fn=clear_all,
-        inputs=[],
-        outputs=[narrative_input, example_radio, recommendation_output, eval_accordion, json_viewer, download_btn]
-    )
+    example_radio.change(fn=update_narrative_from_example, inputs=example_radio, outputs=narrative_input)
+    narrative_input.input(fn=lambda: None, inputs=None, outputs=example_radio)
+    submit_btn.click(fn=get_recommendations_api, inputs=[narrative_input, persona_input, password_input], outputs=[recommendation_output, submit_btn, eval_accordion, json_viewer, download_btn])
+    clear_btn.click(fn=clear_all, inputs=[], outputs=[narrative_input, example_radio, recommendation_output, eval_accordion, json_viewer, download_btn])
 
 
 if __name__ == "__main__":
+    # Add project src to the sys.path for when running as a script
+    APP_ROOT = Path(__file__).parent
+    sys.path.insert(0, str(APP_ROOT / "src"))
     interface.launch()
