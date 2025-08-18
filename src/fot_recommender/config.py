@@ -35,3 +35,7 @@ FOT_GOOGLE_API_KEY = os.environ.get("FOT_GOOGLE_API_KEY")
 DEMO_PASSWORD = os.environ.get(
     "DEMO_PASSWORD", "default_password"
 )  # Added a default for safety
+
+DEMO_PASSWORD_2 = os.environ.get(
+    "DEMO_PASSWORD_2", "default_password"
+)  

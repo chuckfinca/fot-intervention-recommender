@@ -16,6 +16,7 @@ from fot_recommender.config import (  # noqa: E402
     CITATIONS_PATH,
     FOT_GOOGLE_API_KEY,
     DEMO_PASSWORD,
+    DEMO_PASSWORD_2,
     SEARCH_RESULT_COUNT_K,
     MIN_SIMILARITY_SCORE,
 )
@@ -61,7 +62,7 @@ print("✅ API initialized successfully.")
 
 def get_recommendations_api(student_narrative, persona, password):
     """The main function that runs the RAG pipeline and prepares data for export."""
-    if password != DEMO_PASSWORD:
+    if password != DEMO_PASSWORD and password != DEMO_PASSWORD_2:
         yield (
             "Authentication failed. Please enter a valid Access Key.",
             gr.update(interactive=True),
